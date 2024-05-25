@@ -1,228 +1,10 @@
-from core import *
+from dfa import *
 import tkinter as tk
-import datetime
-import pickle
 from tkinter import messagebox
-
-def actualizar_tokens(id_peticion, lexemas):
-    """
-        Actualiza los tokens de los lexemas en la interfaz gráfica y en el tokenizador.
-        Parametros:
-            id_peticion(int): 0 para el personal, 1 para el cliente
-            lexemas([]): lista de lexemas
-        Retorna:
-            None
-    """
-
-    print('Actualizando los tokens de los lexemas... {}'.format(lexemas))
-
-    def cargar_tokens(raiz, tokens, lexemas):
-        """
-            Carga los tokens de los lexemas recibidos en el parametro tokens. Los tokens son obtenidos del DFA apuntado por raiz.
-            El parametro tokens es modificado en el proceso. Los tokens son cargados en el mencionado parametro. 
-            Parametros:
-                raiz(Nodo): raiz del tokenizador
-                tokens(dict): diccionario de tokens
-                lexemas([]): lista de lexemas
-            Retorna:
-                None
-        """
-
-        print('Cargando los tokens de los lexemas...')
-
-        for lexema in lexemas:
-            siguiente = raiz
-            for caracter in lexema:
-                siguiente = mover(siguiente, caracter)
-            siguiente.estado_final = True
-            tokens[lexema] = siguiente.token
-
-        print('Tokens cargados con éxito')
-
-    def cambiar_token(palabra, nuevo_token):
-        """
-            Cambia el token de la palabra recibida en el parametro palabra por el token recibido en el parametro nuevo_token.
-            Estos cambios se reflejan en la interfaz gráfica y en el tokenizador.
-            Parametros:
-                palabra(str): palabra cuyo token se va a cambiar
-                nuevo_token(str): nuevo token
-            Retorna:
-                None
-        """
-
-        tokens[palabra] = nuevo_token
-        actualizar_color(palabra)
-        print(f"Token de '{palabra}' cambiado a '{nuevo_token}'")
-
-        # Cargo el tokenizador
-        if id_peticion == 0:
-            raiz = cargar_tokenizador(0)
-        else:
-            raiz = cargar_tokenizador(1)
-        siguiente = raiz
-
-        # Actualizar el token del lexema cambiado en el Tokenizador
-        for caracter in palabra:
-            siguiente = mover(siguiente, caracter)
-        siguiente.token = nuevo_token
-
-        # Guardar el tokenizador actualizado
-        if id_peticion == 0:
-            guardar_tokenizador(raiz, 0)
-        else:
-            guardar_tokenizador(raiz, 1)
-
-    def actualizar_color(palabra):
-        color_mapping = {
-            0: {
-                "ATC_BUENA": "#DFF2BF",  # Verde claro
-                "ATC_NEUTRA": "#E0E0E0", # Gris claro
-                "ATC_MALA": "#FFBABA"    # Rojo claro
-            },
-            1: {
-                "EXP_BUENA": "#DFF2BF",  # Verde claro
-                "EXP_NEUTRA": "#E0E0E0", # Gris claro
-                "EXP_MALA": "#FFBABA"    # Rojo claro
-            }
-        }
-        
-        color = color_mapping[id_peticion].get(tokens[palabra], "#FFFFFF")  # Default to white if token is not found
-        token_labels[palabra].config(text=tokens[palabra], bg=color)
-
-
-    def dibujar_contenido():
-        for widget in scrollable_frame.winfo_children():
-            widget.destroy()
-
-        # Añadir títulos de las columnas
-        tk.Label(scrollable_frame, text="#", font=('Helvetica', 10, 'bold')).grid(column=0, row=0, pady=5, padx=5)
-        tk.Label(scrollable_frame, text="Palabra", font=('Helvetica', 10, 'bold')).grid(column=1, row=0, pady=5, padx=5)
-        tk.Label(scrollable_frame, text="Token Actual", font=('Helvetica', 10, 'bold')).grid(column=2, row=0, pady=5, padx=5)
-        tk.Label(scrollable_frame, text="Cambio Token", font=('Helvetica', 10, 'bold')).grid(column=3, row=0, pady=5, padx=5, columnspan=3)
-
-        # Mostrar la lista de palabras en una grilla junto con los botones
-        for i, palabra in enumerate(lexemas, start=1):
-            tk.Label(scrollable_frame, text=str(i)).grid(column=0, row=i, pady=5, padx=5)
-            tk.Label(scrollable_frame, text=palabra).grid(column=1, row=i, pady=5, padx=5)
-            token_label = tk.Label(scrollable_frame, text=tokens[palabra], bg="#E0E0E0")
-            token_label.grid(column=2, row=i, pady=5, padx=5)
-            token_labels[palabra] = token_label
-            actualizar_color(palabra)
-                
-            # Crear botones para cambiar el token
-            if id_peticion == 0:
-                estados = ["ATC_MALA", "ATC_NEUTRA", "ATC_BUENA"]
-                colores = ["#FFBABA", "#E0E0E0", "#DFF2BF"]
-            else:
-                estados = ["EXP_MALA", "EXP_NEUTRA", "EXP_BUENA"]
-                colores = ["#FFBABA", "#E0E0E0", "#DFF2BF"]
-
-            for j, estado in enumerate(estados):
-                tk.Button(scrollable_frame, text=estado, bg=colores[j], command=lambda p=palabra, e=estado: cambiar_token(p, e)).grid(column=3+j, row=i, pady=5, padx=5)
-
-    def on_frame_configure(event):
-        canvas.configure(scrollregion=canvas.bbox("all"))
-
-    if id_peticion == 0:
-
-        print('Actualizando los tokens del personal...')
-
-        # Cargar el tokenizador
-        raiz = cargar_tokenizador(id_peticion)
-
-        # Crear la ventana principal
-        root = tk.Tk()
-        root.title("Gestor de Tokens")
-        root.resizable(0, 0)
-        root.geometry("500x600")
-
-        # Establecer el icono de la ventana
-        root.iconbitmap("static/lapiz.ico")
-
-        # Crear un frame para contener el canvas y la scrollbar
-        container = tk.Frame(root)
-        container.pack(fill="both", expand=True)
-
-        # Crear un canvas dentro del frame
-        canvas = tk.Canvas(container)
-        canvas.pack(side="left", fill="both", expand=True)
-
-        # Añadir una scrollbar vertical al canvas
-        scrollbar = tk.Scrollbar(container, orient="vertical", command=canvas.yview)
-        scrollbar.pack(side="right", fill="y")
-
-        # Configurar el canvas para usar la scrollbar
-        canvas.configure(yscrollcommand=scrollbar.set)
-
-        # Crear un frame dentro del canvas
-        scrollable_frame = tk.Frame(canvas)
-
-        # Crear una ventana en el canvas que contenga el frame
-        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
-
-        # Vincular el evento de configuración del frame con la función
-        scrollable_frame.bind("<Configure>", on_frame_configure)
-
-        # Crear un diccionario para almacenar los tokens de cada palabra
-        tokens = {}
-        token_labels = {}
-
-        cargar_tokens(raiz, tokens, lexemas)
-
-        # Dibujar el contenido inicial
-        dibujar_contenido()
-
-        root.mainloop()
-
-    else:
-        print('Actualizando los tokens del cliente...')
-
-        # Cargar el tokenizador
-        raiz = cargar_tokenizador(id_peticion)
-
-        # Crear la ventana principal
-        root = tk.Tk()
-        root.title("Gestor de Tokens")
-        root.resizable(0, 0)
-        root.geometry("500x600")
-
-        # Establecer el icono de la ventana
-        root.iconbitmap("static/lapiz.ico")
-
-        # Crear un frame para contener el canvas y la scrollbar
-        container = tk.Frame(root)
-        container.pack(fill="both", expand=True)
-
-        # Crear un canvas dentro del frame
-        canvas = tk.Canvas(container)
-        canvas.pack(side="left", fill="both", expand=True)
-
-        # Añadir una scrollbar vertical al canvas
-        scrollbar = tk.Scrollbar(container, orient="vertical", command=canvas.yview)
-        scrollbar.pack(side="right", fill="y")
-
-        # Configurar el canvas para usar la scrollbar
-        canvas.configure(yscrollcommand=scrollbar.set)
-
-        # Crear un frame dentro del canvas
-        scrollable_frame = tk.Frame(canvas)
-
-        # Crear una ventana en el canvas que contenga el frame
-        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
-
-        # Vincular el evento de configuración del frame con la función
-        scrollable_frame.bind("<Configure>", on_frame_configure)
-
-        # Crear un diccionario para almacenar los tokens de cada palabra
-        tokens = {}
-        token_labels = {}
-
-        cargar_tokens(raiz, tokens, lexemas)
-
-        # Dibujar el contenido inicial
-        dibujar_contenido()
-
-        root.mainloop()
+from tokenizador import *
+import datetime
+from hash_function import HashFunction
+from window_gestor_token import ventana_actualizar_tokens
 
 def resumen(ATC_Puntaje, EXP_Puntaje):
     """
@@ -234,47 +16,16 @@ def resumen(ATC_Puntaje, EXP_Puntaje):
     messagebox.showinfo("Resumen", "Resumen de los resultados:\n\nPersonal:\nATC_BUENA: {}\nATC_NEUTRA: {}\nATC_MALA: {}\n\nCliente:\nEXP_BUENA: {}\nEXP_NEUTRA: {}\nEXP_MALA: {}".format(ATC_Puntaje[0], ATC_Puntaje[1], ATC_Puntaje[2], EXP_Puntaje[0], EXP_Puntaje[1], EXP_Puntaje[2]))
     print('Resumen generado con éxito')
 
-def guardar_tokenizador(raiz, id_peticion):
-
-    # Guardar la estructura en un archivo
-    nombre_archivo = 'tokenizador' + str(id_peticion) + '.pkl'
-    if id_peticion == 0:
-        print('Guardando el TOKENIZADOR del personal...')
-    else:
-        print('Guardando el TOKENIZADOR del cliente...')
-    with open(nombre_archivo, 'wb') as archivo:
-        pickle.dump(raiz, archivo)
-        print('TOKENIZADOR guardado con éxito')
-
-def cargar_tokenizador(id_peticion):
-
-    # Cargar el AFD
-    nombre_archivo = 'tokenizador' + str(id_peticion) + '.pkl'
-    if id_peticion == 0:
-        print('Cargando el TOKENIZADOR del personal...')
-    else:
-        print('Cargando el TOKENIZADOR del cliente...')
-    raiz = None
-    try:
-        with open(nombre_archivo, 'rb') as archivo:
-            raiz = pickle.load(archivo)
-            print('TOKENIZADOR cargado con éxito')
-    except (FileNotFoundError, IOError, EOFError) as e:
-        print(f"No se pudo abrir el archivo: {e}")
-        # Como aun no se ha creado el archivo entonces hay que crear el AFD desde cero
-        raiz = Nodo()
-
-    return raiz
-
 def mostrar_emergente(siguiente, lexema, id_peticion):
     """
-        id_peticion: 0 para el personal, 1 para el cliente
+    Función que muestra una ventana emergente para que el usuario seleccione el token correspondiente a un lexema.
+    Parámetros:
+        siguiente(Nodo): nodo actual del DFA.
+        lexema(str): lexema a categorizar.
+        id_peticion(int): 0 para el personal, 1 para el cliente.
+    Returns:
+        None
     """
-
-    token_mala = ''
-    token_neutra = ''
-    token_buena = ''
-
     if id_peticion == 0:
         token_mala = 'ATC_MALA'
         token_neutra = 'ATC_NEUTRA'
@@ -386,7 +137,7 @@ def procesar(id_peticion, puntaje, lexemas_retorno):
         print('Texto a procesar: ' + entrada)
 
         # Creamos nuestra función hash
-        hash_alfabeto = crear_funcion_hash()
+        hash_alfabeto = HashFunction().get_funcion_hash()
 
         siguiente = raiz
         lexema = ''
@@ -408,7 +159,7 @@ def procesar(id_peticion, puntaje, lexemas_retorno):
                     continue
                 else:
                     lexema = lexema + caracter
-                    siguiente = mover(siguiente, caracter)
+                    siguiente = siguiente.mover(caracter)
             else:
 
                 if lexema == '':
@@ -417,7 +168,7 @@ def procesar(id_peticion, puntaje, lexemas_retorno):
                 
                     siguiente.estado_final = True
                     
-                    # interfaz para preguntar al usuario que tipo de lexema es
+                    # Interfaz para preguntar al usuario que tipo de lexema es
                     if siguiente.token == '':
                         print('\t' + lexema + ' no pertenece a ningún token')
                         mostrar_emergente(siguiente, lexema, id_peticion)
@@ -426,7 +177,7 @@ def procesar(id_peticion, puntaje, lexemas_retorno):
 
                     lexemas.append(lexema)
                     
-                    # contador de lexemas
+                    # Contador de lexemas
                     if siguiente.token[-5:] == "BUENA":
                         buena += 1
                     elif siguiente.token[-6:] == "NEUTRA":
@@ -452,7 +203,6 @@ def procesar(id_peticion, puntaje, lexemas_retorno):
     lexemas = list(set(lexemas))
     # Ordenar lexicográficamente
     lexemas.sort()
-    print(lexemas)
 
     # Copiar lexemas en lexemas_retorno
     lexemas_retorno.clear()
@@ -494,18 +244,26 @@ lexemas_cliente = []
 titulo_personal = tk.Label(frm, text='Personal', font=('', 13)).grid(column=0, row=0)
 texto_area_personal = tk.Text(frm, bg="#D0E8C5")
 texto_area_personal.grid(column=0, row=1, pady=5, padx=2.5)
-btn_procesar_personal = tk.Button(frm, text="Procesar", command=lambda: procesar(0, ATC_Puntaje, lexemas_personal)).grid(column=0, row=2, pady=5)
-btn_actualizar_tokens_personal = tk.Button(frm, text="Actualizar Tokens", command=lambda: actualizar_tokens(0, lexemas_personal)).grid(column=0, row=3, pady=5)
+# Crear un marco para los botones del personal en el marco frm en la grilla de la columna 0 y fila 2
+frm_personal = tk.Frame(frm)
+frm_personal.grid(column=0, row=2)
+# Agregamos los botones en dos columnas en el marco generado anteriormente
+btn_procesar_personal = tk.Button(frm_personal, text="Procesar", command=lambda: procesar(0, ATC_Puntaje, lexemas_personal)).grid(column=0, row=0, pady=5, padx=5)
+btn_actualizar_tokens_personal = tk.Button(frm_personal, text="Actualizar Tokens", command=lambda: ventana_actualizar_tokens(0, lexemas_personal)).grid(column=1, row=0, pady=5)
 
 # Crear un área de texto para el cliente junto con su boton
 titulo_cliente = tk.Label(frm, text='Cliente', font=('', 13)).grid(column=1, row=0, pady=5)
 texto_area_cliente = tk.Text(frm, bg="#E8DAC5")
 texto_area_cliente.grid(column=1, row=1, pady=5, padx=2.5)
-btn_procesar_cliente = tk.Button(frm, text="Procesar", command=lambda: procesar(1, EXP_Puntaje, lexemas_cliente)).grid(column=1, row=2, pady=5)
-btn_actualizar_tokens_cliente = tk.Button(frm, text="Actualizar Tokens", command=lambda: actualizar_tokens(1, lexemas_cliente)).grid(column=1, row=3, pady=5)
+# Crear un marco para los botones del cliente en el marco frm en la grilla de la columna 1 y fila 2
+frm_cliente = tk.Frame(frm)
+frm_cliente.grid(column=1, row=2)
+# Agregamos los botones en dos columnas en el marco generado anteriormente
+btn_procesar_cliente = tk.Button(frm_cliente, text="Procesar", command=lambda: procesar(1, EXP_Puntaje, lexemas_cliente)).grid(column=0, row=0, pady=5, padx=5)
+btn_actualizar_tokens_cliente = tk.Button(frm_cliente, text="Actualizar Tokens", command=lambda: ventana_actualizar_tokens(1, lexemas_cliente)).grid(column=1, row=0, pady=5)
 
 # Boton resumen
-btn_resumen = tk.Button(frm, text="Resumen", command=lambda: resumen(ATC_Puntaje, EXP_Puntaje)).grid(column=0, row=4, columnspan=2, pady=5)
+btn_resumen = tk.Button(frm, text="Generar Resumen", command=lambda: resumen(ATC_Puntaje, EXP_Puntaje)).grid(column=0, row=4, columnspan=2, pady=5)
 
 # Ejecutar el bucle principal de la aplicación
 root.mainloop()
