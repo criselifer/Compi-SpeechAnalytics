@@ -5,10 +5,31 @@ import pickle
 from tkinter import messagebox
 
 def actualizar_tokens(id_peticion, lexemas):
+    """
+        Actualiza los tokens de los lexemas en la interfaz gráfica y en el tokenizador.
+        Parametros:
+            id_peticion(int): 0 para el personal, 1 para el cliente
+            lexemas([]): lista de lexemas
+        Retorna:
+            None
+    """
 
-    print(lexemas)
+    print('Actualizando los tokens de los lexemas... {}'.format(lexemas))
 
     def cargar_tokens(raiz, tokens, lexemas):
+        """
+            Carga los tokens de los lexemas recibidos en el parametro tokens. Los tokens son obtenidos del DFA apuntado por raiz.
+            El parametro tokens es modificado en el proceso. Los tokens son cargados en el mencionado parametro. 
+            Parametros:
+                raiz(Nodo): raiz del tokenizador
+                tokens(dict): diccionario de tokens
+                lexemas([]): lista de lexemas
+            Retorna:
+                None
+        """
+
+        print('Cargando los tokens de los lexemas...')
+
         for lexema in lexemas:
             siguiente = raiz
             for caracter in lexema:
@@ -16,7 +37,19 @@ def actualizar_tokens(id_peticion, lexemas):
             siguiente.estado_final = True
             tokens[lexema] = siguiente.token
 
+        print('Tokens cargados con éxito')
+
     def cambiar_token(palabra, nuevo_token):
+        """
+            Cambia el token de la palabra recibida en el parametro palabra por el token recibido en el parametro nuevo_token.
+            Estos cambios se reflejan en la interfaz gráfica y en el tokenizador.
+            Parametros:
+                palabra(str): palabra cuyo token se va a cambiar
+                nuevo_token(str): nuevo token
+            Retorna:
+                None
+        """
+
         tokens[palabra] = nuevo_token
         actualizar_color(palabra)
         print(f"Token de '{palabra}' cambiado a '{nuevo_token}'")
