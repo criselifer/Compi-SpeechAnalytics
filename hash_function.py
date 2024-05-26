@@ -1,6 +1,8 @@
 class HashFunction:
     """
     Clase que implementa el patrón Singleton para crear una función hash que asigna un valor a cada letra del alfabeto español.
+    Ejemplo:
+        hash_function = HashFunction().get_funcion_hash()
     """
     _instance = None  # Variable de clase para almacenar la instancia única
     _funcion_hash = None  # Variable de clase para almacenar la función hash

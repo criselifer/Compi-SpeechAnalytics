@@ -41,5 +41,5 @@ class Nodo:
             nodo_siguiente = Nodo()
             self.siguiente[hash_alfabeto[caracter]] = nodo_siguiente 
 
-        print("Transición realizada.")
+        print("Transición completada.")
         return nodo_siguiente

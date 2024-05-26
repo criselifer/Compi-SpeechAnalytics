@@ -4,107 +4,33 @@ from tkinter import messagebox
 from tokenizador import *
 import datetime
 from hash_function import HashFunction
-from window_gestor_token import ventana_actualizar_tokens
+from window_gestor_token import ventana_tokens
+from window_seleccion_token import mostrar_emergente
 
 def resumen(ATC_Puntaje, EXP_Puntaje):
     """
-        ATC_Puntaje: array de 3 elementos para almacenar el puntaje de cada tipo de lexema del personal
-        EXP_Puntaje: array de 3 elementos para almacenar el puntaje de cada tipo de lexema del cliente
+    Función que genera un resumen de los resultados obtenidos.
+    Parámetros:
+        ATC_Puntaje([]): array de 3 elementos para almacenar el puntaje de cada tipo de lexema del personal
+        EXP_Puntaje([]): array de 3 elementos para almacenar el puntaje de cada tipo de lexema del cliente
+    Returns:
+        None
     """
     print('Generando resumen...')
     # Mostrar los resultados en una ventana emergente
     messagebox.showinfo("Resumen", "Resumen de los resultados:\n\nPersonal:\nATC_BUENA: {}\nATC_NEUTRA: {}\nATC_MALA: {}\n\nCliente:\nEXP_BUENA: {}\nEXP_NEUTRA: {}\nEXP_MALA: {}".format(ATC_Puntaje[0], ATC_Puntaje[1], ATC_Puntaje[2], EXP_Puntaje[0], EXP_Puntaje[1], EXP_Puntaje[2]))
     print('Resumen generado con éxito')
 
-def mostrar_emergente(siguiente, lexema, id_peticion):
+def procesar(id_peticion, puntaje, lexemas_retorno):
     """
-    Función que muestra una ventana emergente para que el usuario seleccione el token correspondiente a un lexema.
+    Función que procesa el texto ingresado por el usuario y muestra los resultados en una ventana emergente.
     Parámetros:
-        siguiente(Nodo): nodo actual del DFA.
-        lexema(str): lexema a categorizar.
-        id_peticion(int): 0 para el personal, 1 para el cliente.
+        id_peticion(int): 0 para el personal, 1 para el cliente
+        puntaje([]): array de 3 elementos para almacenar el puntaje de cada tipo de lexema
+        lexemas_retorno([]): lista de lexemas
     Returns:
         None
     """
-    if id_peticion == 0:
-        token_mala = 'ATC_MALA'
-        token_neutra = 'ATC_NEUTRA'
-        token_buena = 'ATC_BUENA'
-    else:
-        token_mala = 'EXP_MALA'
-        token_neutra = 'EXP_NEUTRA'
-        token_buena = 'EXP_BUENA'
-
-    ventana_emergente = tk.Toplevel()
-    ventana_emergente.title("Categorización de lexemas")
-    ventana_emergente.resizable(0, 0)
-
-    # Crear un contenedor para la etiqueta de texto
-    contenedor_texto = tk.Frame(ventana_emergente)
-    contenedor_texto.pack(pady=5)
-    etiqueta_texto = tk.Label(contenedor_texto, text="¿A qué token pertenece el lexema '{}' ?".format(lexema), font=("Arial", 12))
-    etiqueta_texto.pack()
-
-    # Funciones para asignar el token correspondiente
-    def func_mala(siguiente, lexema):
-        siguiente.token = token_mala
-        print("\t\t" + token_mala + " seleccionado")
-        ventana_emergente.destroy()
-
-    def func_neutral(siguiente, lexema):
-        siguiente.token = token_neutra
-        print("\t\t" + token_neutra + " seleccionado")
-        ventana_emergente.destroy()
-
-    def func_buena(siguiente, lexema):
-        siguiente.token = token_buena
-        print("\t\t" + token_buena + " seleccionado")
-        ventana_emergente.destroy()
-
-    # Función para crear botones con colores específicos y texto en blanco
-    def crear_boton(contenedor, texto, bg_color, opcion, funcion):
-        return tk.Button(contenedor, text=texto, bg=bg_color, fg="black", command=lambda: funcion(siguiente, lexema))
-
-    # Crear un contenedor para los botones
-    contenedor_botones = tk.Frame(ventana_emergente)
-    contenedor_botones.pack(pady=5)
-
-    # Crear los botones dentro del contenedor de botones
-    btn_mala = crear_boton(contenedor_botones, token_mala, "#FFBABA", 1, func_mala)
-    btn_mala.pack(side=tk.LEFT, padx=3, pady=5)
-
-    btn_neutral = crear_boton(contenedor_botones, token_neutra, "#E0E0E0", 2, func_neutral)
-    btn_neutral.pack(side=tk.LEFT, padx=3, pady=5)
-
-    btn_buena = crear_boton(contenedor_botones, token_buena, "#DFF2BF", 3, func_buena)
-    btn_buena.pack(side=tk.LEFT, padx=3, pady=5)
-
-    # Centrar el contenedor de texto en la ventana emergente
-    contenedor_texto.place(relx=0.5, rely=0.2, anchor=tk.CENTER)
-
-    # Centrar el contenedor de botones debajo del contenedor de texto
-    contenedor_botones.place(relx=0.5, rely=0.6, anchor=tk.CENTER)
-
-    # Establecer el tamaño de la ventana emergente
-    ventana_emergente.geometry("400x100")
-
-    # Centrar la ventana emergente en la pantalla
-    ventana_emergente.update_idletasks()
-    wventana = ventana_emergente.winfo_width()
-    hventana = ventana_emergente.winfo_height()
-    pwidth = (ventana_emergente.winfo_screenwidth() - wventana) // 2
-    pheight = (ventana_emergente.winfo_screenheight() - hventana) // 2
-    ventana_emergente.geometry(str(wventana)+"x"+str(hventana)+"+"+str(pwidth)+"+"+str(pheight))
-
-    # Mostrar la ventana emergente y esperar a que se cierre
-    ventana_emergente.wait_window(ventana_emergente)
-
-def procesar(id_peticion, puntaje, lexemas_retorno):
-    """
-        id_peticion: 0 para el personal, 1 para el cliente
-        puntaje: array de 3 elementos para almacenar el puntaje de cada tipo de lexema
-    """
-
     # Cargar el tokenizador
     raiz = cargar_tokenizador(id_peticion)
 
@@ -136,7 +62,7 @@ def procesar(id_peticion, puntaje, lexemas_retorno):
     else:
         print('Texto a procesar: ' + entrada)
 
-        # Creamos nuestra función hash
+        # Generar la función hash
         hash_alfabeto = HashFunction().get_funcion_hash()
 
         siguiente = raiz
@@ -147,37 +73,41 @@ def procesar(id_peticion, puntaje, lexemas_retorno):
         entrada = entrada.lower()
         entrada = entrada + ' '
 
-        # contadores
+        # Contadores de lexemas por token
         buena = 0
         neutra = 0
         mala = 0
 
+        # Por cada caracter en la entrada
         for caracter in entrada:
             
+            # Si el caracter no es un espacio, salto de línea, tabulación o retorno de carro seguir procesando caracteres, caso contrario o es un lexema ya
+            # completo o es un espacio en blanco 
             if not(caracter in [' ', '\n', '\t', '\r']):
+                # Si el caracter es un caracter especial, no se considera caso contrario se agrega al lexema y se mueve al siguiente nodo
                 if caracter in ['/', '.', ',', '?', '¿', '!', '¡', '(', ')', '"', ':', ';', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ]:
                     continue
                 else:
                     lexema = lexema + caracter
                     siguiente = siguiente.mover(caracter)
             else:
-
+                # Si el lexema es vacío, no hacer nada caso contrario se marca el nodo actual como estado final
                 if lexema == '':
                     continue
                 else:
-                
                     siguiente.estado_final = True
-                    
-                    # Interfaz para preguntar al usuario que tipo de lexema es
+                    # Interfaz para preguntar al usuario que tipo de lexema es en caso de no tener un token asignado
                     if siguiente.token == '':
                         print('\t' + lexema + ' no pertenece a ningún token')
+                        # Mostrar ventana emergente
                         mostrar_emergente(siguiente, lexema, id_peticion)
                     else:
                         print('\t' + lexema + ' pertenece al token ' + siguiente.token)
 
+                    # Agregar el lexema a la lista de lexemas
                     lexemas.append(lexema)
                     
-                    # Contador de lexemas
+                    # Contador de lexemas por token
                     if siguiente.token[-5:] == "BUENA":
                         buena += 1
                     elif siguiente.token[-6:] == "NEUTRA":
@@ -185,6 +115,7 @@ def procesar(id_peticion, puntaje, lexemas_retorno):
                     else:
                         mala += 1
                     
+                    # Reiniciar el lexema y el nodo actual vuelve a la raiz
                     lexema = ''
                     siguiente = raiz
     
@@ -199,7 +130,7 @@ def procesar(id_peticion, puntaje, lexemas_retorno):
     puntaje[1] = neutra
     puntaje[2] = mala
 
-    # Eliminar duplicados convirtiendo a conjunto y luego a lista
+    # Eliminar lexemas duplicados convirtiendo a conjunto y luego a lista
     lexemas = list(set(lexemas))
     # Ordenar lexicográficamente
     lexemas.sort()
@@ -249,7 +180,7 @@ frm_personal = tk.Frame(frm)
 frm_personal.grid(column=0, row=2)
 # Agregamos los botones en dos columnas en el marco generado anteriormente
 btn_procesar_personal = tk.Button(frm_personal, text="Procesar", command=lambda: procesar(0, ATC_Puntaje, lexemas_personal)).grid(column=0, row=0, pady=5, padx=5)
-btn_actualizar_tokens_personal = tk.Button(frm_personal, text="Actualizar Tokens", command=lambda: ventana_actualizar_tokens(0, lexemas_personal)).grid(column=1, row=0, pady=5)
+btn_actualizar_tokens_personal = tk.Button(frm_personal, text="Administrar Tokens", command=lambda: ventana_tokens(0, lexemas_personal)).grid(column=1, row=0, pady=5)
 
 # Crear un área de texto para el cliente junto con su boton
 titulo_cliente = tk.Label(frm, text='Cliente', font=('', 13)).grid(column=1, row=0, pady=5)
@@ -260,7 +191,7 @@ frm_cliente = tk.Frame(frm)
 frm_cliente.grid(column=1, row=2)
 # Agregamos los botones en dos columnas en el marco generado anteriormente
 btn_procesar_cliente = tk.Button(frm_cliente, text="Procesar", command=lambda: procesar(1, EXP_Puntaje, lexemas_cliente)).grid(column=0, row=0, pady=5, padx=5)
-btn_actualizar_tokens_cliente = tk.Button(frm_cliente, text="Actualizar Tokens", command=lambda: ventana_actualizar_tokens(1, lexemas_cliente)).grid(column=1, row=0, pady=5)
+btn_actualizar_tokens_cliente = tk.Button(frm_cliente, text="Administrar Tokens", command=lambda: ventana_tokens(1, lexemas_cliente)).grid(column=1, row=0, pady=5)
 
 # Boton resumen
 btn_resumen = tk.Button(frm, text="Generar Resumen", command=lambda: resumen(ATC_Puntaje, EXP_Puntaje)).grid(column=0, row=4, columnspan=2, pady=5)

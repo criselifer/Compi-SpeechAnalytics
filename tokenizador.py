@@ -1,7 +1,6 @@
 import pickle
 from dfa import Nodo
 
-@staticmethod
 def guardar_tokenizador(raiz, id_peticion):
     """
     Guarda la estructura del tokenizador en un archivo. El archivo se guarda con el nombre 'tokenizador<id>.pkl', 
@@ -23,7 +22,6 @@ def guardar_tokenizador(raiz, id_peticion):
         pickle.dump(raiz, archivo)
         print('TOKENIZADOR guardado con éxito')
 
-@staticmethod
 def cargar_tokenizador(id_peticion):
     """
     Carga la estructura del tokenizador desde un archivo. El archivo se carga con el nombre 'tokenizador<id>.pkl',

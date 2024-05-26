@@ -1,7 +1,7 @@
 import tkinter as tk
 from tokenizador import *
 
-def ventana_actualizar_tokens(id_peticion, lexemas):
+def ventana_tokens(id_peticion, lexemas):
     """
     Actualiza los tokens de los lexemas en la interfaz gráfica y en el tokenizador.
     Parametros:
@@ -44,7 +44,17 @@ def ventana_actualizar_tokens(id_peticion, lexemas):
         else:
             guardar_tokenizador(raiz, 1)
 
+        # Liberar la memoria
+        raiz = None
+
     def actualizar_color(palabra):
+        """
+        Actualiza el color del token en la interfaz gráfica según el valor del token.
+        Parametros:
+            palabra(str): palabra cuyo token se va a cambiar
+        Retorna:
+            None
+        """
         color_mapping = {
             0: {
                 "ATC_BUENA": "#DFF2BF",  # Verde claro
@@ -57,12 +67,16 @@ def ventana_actualizar_tokens(id_peticion, lexemas):
                 "EXP_MALA": "#FFBABA"    # Rojo claro
             }
         }
-        
-        color = color_mapping[id_peticion].get(tokens[palabra], "#FFFFFF")  # Default to white if token is not found
+        # Cambiar el color del token en la interfaz gráfica según el valor del token
+        color = color_mapping[id_peticion].get(tokens[palabra], "#FFFFFF")
         token_labels[palabra].config(text=tokens[palabra], bg=color)
 
-
     def dibujar_contenido():
+        """
+        Dibuja el contenido de la interfaz gráfica.
+        Retorna:
+            None
+        """
         for widget in scrollable_frame.winfo_children():
             widget.destroy()
 
@@ -72,8 +86,9 @@ def ventana_actualizar_tokens(id_peticion, lexemas):
         tk.Label(scrollable_frame, text="Token Actual", font=('Helvetica', 10, 'bold')).grid(column=2, row=0, pady=5, padx=5)
         tk.Label(scrollable_frame, text="Cambio Token", font=('Helvetica', 10, 'bold')).grid(column=3, row=0, pady=5, padx=5, columnspan=3)
 
-        # Mostrar la lista de palabras en una grilla junto con los botones
+        # Mostrar la lista de palabras en una grilla junto con los botones para cambiar el token
         for i, palabra in enumerate(lexemas, start=1):
+
             tk.Label(scrollable_frame, text=str(i)).grid(column=0, row=i, pady=5, padx=5)
             tk.Label(scrollable_frame, text=palabra).grid(column=1, row=i, pady=5, padx=5)
             token_label = tk.Label(scrollable_frame, text=tokens[palabra], bg="#E0E0E0")
@@ -81,7 +96,7 @@ def ventana_actualizar_tokens(id_peticion, lexemas):
             token_labels[palabra] = token_label
             actualizar_color(palabra)
                 
-            # Crear botones para cambiar el token
+            # Colores y estados de los tokens según el tipo de petición. 0 para el personal, 1 para el cliente
             if id_peticion == 0:
                 estados = ["ATC_MALA", "ATC_NEUTRA", "ATC_BUENA"]
                 colores = ["#FFBABA", "#E0E0E0", "#DFF2BF"]
@@ -89,10 +104,18 @@ def ventana_actualizar_tokens(id_peticion, lexemas):
                 estados = ["EXP_MALA", "EXP_NEUTRA", "EXP_BUENA"]
                 colores = ["#FFBABA", "#E0E0E0", "#DFF2BF"]
 
+            # Crear botones para cambiar el token
             for j, estado in enumerate(estados):
                 tk.Button(scrollable_frame, text=estado, bg=colores[j], command=lambda p=palabra, e=estado: cambiar_token(p, e)).grid(column=3+j, row=i, pady=5, padx=5)
 
     def on_frame_configure(event):
+        """
+        Configura el tamaño del canvas y el scrollregion del canvas.
+        Parametros:
+            event(tk.Event): evento de configuración
+        Retorna:
+            None
+        """
         canvas.configure(scrollregion=canvas.bbox("all"))
 
     if id_peticion == 0:
@@ -136,10 +159,12 @@ def ventana_actualizar_tokens(id_peticion, lexemas):
     # Vincular el evento de configuración del frame con la función
     scrollable_frame.bind("<Configure>", on_frame_configure)
 
-    # Crear un diccionario para almacenar los tokens de cada palabra
+    # Crear un diccionario para almacenar los tokens de cada palabra, y otro para almacenar los labels de los tokens.
+    # Esto es necesario para actualizar los tokens en la interfaz gráfica.
     tokens = {}
     token_labels = {}
 
+    # Cargar los tokens de los lexemas en el diccionario tokens. Necesario para actualizar los tokens en la interfaz gráfica.
     cargar_tokens(raiz, tokens, lexemas)
 
     # Dibujar el contenido inicial
