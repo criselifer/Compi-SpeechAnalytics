@@ -7,7 +7,7 @@ from hash_function import HashFunction
 from window_gestor_token import ventana_tokens
 from window_seleccion_token import mostrar_emergente
 
-def resumen(ATC_Puntaje, EXP_Puntaje):
+def resumen(puntuacion_personal, puntuacion_cliente):
     """
     Función que genera un resumen de los resultados obtenidos.
     Parámetros:
@@ -17,11 +17,15 @@ def resumen(ATC_Puntaje, EXP_Puntaje):
         None
     """
     print('Generando resumen...')
+
+    puntuacion_global = (puntuacion_personal + puntuacion_cliente) / 2
+
     # Mostrar los resultados en una ventana emergente
-    messagebox.showinfo("Resumen", "Resumen de los resultados:\n\nPersonal:\nATC_BUENA: {}\nATC_NEUTRA: {}\nATC_MALA: {}\n\nCliente:\nEXP_BUENA: {}\nEXP_NEUTRA: {}\nEXP_MALA: {}".format(ATC_Puntaje[0], ATC_Puntaje[1], ATC_Puntaje[2], EXP_Puntaje[0], EXP_Puntaje[1], EXP_Puntaje[2]))
+    messagebox.showinfo("Resumen", "Resumen de los resultados:\n\n- PERSONAL: {} \n- CLIENTE: {} \n\nPUNTUACION DE LA LLAMADA: {}".format(puntuacion_personal, puntuacion_cliente, puntuacion_global))
+    #messagebox.showinfo("Resumen", "Resumen de los resultados:\n\nPersonal:\nATC_BUENA: {}\nATC_NEUTRA: {}\nATC_MALA: {}\n\nCliente:\nEXP_BUENA: {}\nEXP_NEUTRA: {}\nEXP_MALA: {}".format(ATC_Puntaje[0], ATC_Puntaje[1], ATC_Puntaje[2], EXP_Puntaje[0], EXP_Puntaje[1], EXP_Puntaje[2]))
     print('Resumen generado con éxito')
 
-def procesar(id_peticion, puntaje, lexemas_retorno):
+def procesar(id_peticion, puntaje, lexemas_retorno, puntuacion):
     """
     Función que procesa el texto ingresado por el usuario y muestra los resultados en una ventana emergente.
     Parámetros:
@@ -55,6 +59,35 @@ def procesar(id_peticion, puntaje, lexemas_retorno):
         print('Procesando el texto del cliente...')
         entrada = texto_area_cliente.get("1.0", "end-1c")
     
+    ban_saludo, ban_despedida = False, False
+    if id_peticion == 0:
+
+        # Mapear si en la entrada hay algun saludo
+        print('Mapeando saludos...')
+        saludos = ['buen dia', 'buenas tardes', 'buenas noches']
+        ban_saludo = False
+        for saludo in saludos:
+            if saludo in entrada:
+                ban_saludo = True
+                break
+        if ban_saludo:
+            print('Saludo encontrado')
+        else:
+            print('Saludo no encontrado')
+
+        # Mapear si en la entrada hay alguna despedida
+        print('Mapeando despedidas...')
+        despedidas = ['hasta luego']
+        ban_despedida = False
+        for despedida in despedidas:
+            if despedida in entrada:
+                ban_despedida = True
+                break
+        if ban_despedida:
+            print('Despedida encontrada')
+        else:
+            print('Despedida no encontrada')
+        
     # Si no hay texto, no hacer nada
     if not entrada:
         print('No hay texto para procesar')
@@ -121,9 +154,60 @@ def procesar(id_peticion, puntaje, lexemas_retorno):
     
     # Mostrar los resultados en una ventana emergente
     if id_peticion ==  0:
-        messagebox.showinfo("Resultados", "El analisis ha arrojado los siguientes resultados :\n\n{}: {}\n{}: {}\n{}: {}".format(token_buena, buena, token_neutra, neutra, token_mala, mala))
+
+        # Inicializar las puntuaciones
+        puntuacion_buena = buena
+        puntuacion_mala = mala
+
+        # Ajustar las puntuaciones basadas en los indicadores de saludo y despedida
+        if ban_saludo:
+            puntuacion_buena += 1
+        else:
+            puntuacion_mala += 1
+            
+        if ban_despedida:
+            puntuacion_buena += 1
+        else:
+            puntuacion_mala += 1
+
+        # Verificar que no haya división por cero
+        total_puntuaciones = puntuacion_buena + puntuacion_mala
+        if total_puntuaciones == 0:
+            puntuacion_personal = 1
+        else:
+
+            # Normalizar los puntajes
+            buena_normalizado = puntuacion_buena / total_puntuaciones
+            mala_normalizado = puntuacion_mala / total_puntuaciones
+
+            # Calcular la ponderación final en escala del 1 al 5
+            puntuacion_personal = 1 + ( 0 if (buena_normalizado - mala_normalizado) <= 0 else (buena_normalizado - mala_normalizado) ) * 4
+
+        puntuacion[0] = puntuacion_personal
+
+        messagebox.showinfo("Resultados", "El analisis ha arrojado los siguientes resultados :\n\n- {} : {}\n- {}: {}\n- {}: {} \n- SALUDO: {} \n- DESPEDIDA: {} \n\n- Balance buenas: {} \n- Balance malas: {} \nPuntuacion final: {}".format(token_buena, buena, token_neutra, neutra, token_mala, mala, 'Si' if ban_saludo else 'No', 'Si' if ban_despedida else 'No', puntuacion_buena, puntuacion_mala, puntuacion_personal))
     else:
-        messagebox.showinfo("Resultados", "El analisis ha arrojado los siguientes resultados :\n\n{}: {}\n{}: {}\n{}: {}".format(token_buena, buena, token_neutra, neutra, token_mala, mala))
+    
+        # Inicializar las puntuaciones
+        puntuacion_buena = buena
+        puntuacion_mala = mala
+
+        # Verificar que no haya división por cero
+        total_puntuaciones = puntuacion_buena + puntuacion_mala
+        if total_puntuaciones == 0:
+            puntuacion_cliente = 1
+        else:
+
+            # Normalizar los puntajes
+            buena_normalizado = puntuacion_buena / total_puntuaciones
+            mala_normalizado = puntuacion_mala / total_puntuaciones
+
+            # Calcular la ponderación final en escala del 1 al 5
+            puntuacion_cliente = 1 + ( 0 if (buena_normalizado - mala_normalizado) <= 0 else (buena_normalizado - mala_normalizado) ) * 4
+        
+        puntuacion[1] = puntuacion_cliente
+    
+        messagebox.showinfo("Resultados", "El analisis ha arrojado los siguientes resultados :\n\n- {}: {}\n- {}: {}\n- {}: {} \n\nPuntuacion final: {}".format(token_buena, buena, token_neutra, neutra, token_mala, mala, puntuacion_cliente))
     
     # Actualizar el puntaje
     puntaje[0] = buena
@@ -171,6 +255,8 @@ EXP_Puntaje = [0, 0, 0]
 lexemas_personal = []
 lexemas_cliente = []
 
+puntuacion = [0, 0]
+
 # Crear un área de texto para el personal junto con su boton
 titulo_personal = tk.Label(frm, text='Personal', font=('', 13)).grid(column=0, row=0)
 texto_area_personal = tk.Text(frm, bg="#D0E8C5")
@@ -179,7 +265,7 @@ texto_area_personal.grid(column=0, row=1, pady=5, padx=2.5)
 frm_personal = tk.Frame(frm)
 frm_personal.grid(column=0, row=2)
 # Agregamos los botones en dos columnas en el marco generado anteriormente
-btn_procesar_personal = tk.Button(frm_personal, text="Procesar", command=lambda: procesar(0, ATC_Puntaje, lexemas_personal)).grid(column=0, row=0, pady=5, padx=5)
+btn_procesar_personal = tk.Button(frm_personal, text="Procesar", command=lambda: procesar(0, ATC_Puntaje, lexemas_personal, puntuacion)).grid(column=0, row=0, pady=5, padx=5)
 btn_actualizar_tokens_personal = tk.Button(frm_personal, text="Administrar Tokens", command=lambda: ventana_tokens(0, lexemas_personal)).grid(column=1, row=0, pady=5)
 
 # Crear un área de texto para el cliente junto con su boton
@@ -190,11 +276,11 @@ texto_area_cliente.grid(column=1, row=1, pady=5, padx=2.5)
 frm_cliente = tk.Frame(frm)
 frm_cliente.grid(column=1, row=2)
 # Agregamos los botones en dos columnas en el marco generado anteriormente
-btn_procesar_cliente = tk.Button(frm_cliente, text="Procesar", command=lambda: procesar(1, EXP_Puntaje, lexemas_cliente)).grid(column=0, row=0, pady=5, padx=5)
+btn_procesar_cliente = tk.Button(frm_cliente, text="Procesar", command=lambda: procesar(1, EXP_Puntaje, lexemas_cliente, puntuacion)).grid(column=0, row=0, pady=5, padx=5)
 btn_actualizar_tokens_cliente = tk.Button(frm_cliente, text="Administrar Tokens", command=lambda: ventana_tokens(1, lexemas_cliente)).grid(column=1, row=0, pady=5)
 
 # Boton resumen
-btn_resumen = tk.Button(frm, text="Generar Resumen", command=lambda: resumen(ATC_Puntaje, EXP_Puntaje)).grid(column=0, row=4, columnspan=2, pady=5)
+btn_resumen = tk.Button(frm, text="Generar Resumen", command=lambda: resumen(puntuacion[0], puntuacion[1])).grid(column=0, row=4, columnspan=2, pady=5)
 
 # Ejecutar el bucle principal de la aplicación
 root.mainloop()
