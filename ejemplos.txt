@@ -1,0 +1,37 @@
+EJEMPLO1:
+
+a. ENTRADA – ATENCION AL CLIENTE:
+Buenos días, le saluda Joanna de atención al cliente, ¿en qué puedo ayudarle?
+Puedo darle esa información.Por favor, ¿me facilita su número de documento?
+Gracias, una pregunta de seguridad, ¿puede darme el año de su fecha de
+nacimiento?
+Gracias. Verifico que su saldo es de doscientos trienta mil guaraníes a la fecha de
+ayer. ¿Algo más que pueda hacer por usted?
+Gracias por llamar al servicio de atención al cliente.Que tenga un buen día.
+
+b. ENTRADA – CLIENTE:
+Buen dia. Desde ayer que no puedo consultar mi saldo.
+Claro, tres millones doscientos sesenta mil cero sesenta y ocho.En año de mi nacimiento es mil novecientos noventa y seis.
+No, muchas gracias. Usted ha sido muy amable.
+Hasta luego.
+
+EJEMPLO2:
+
+a. ENTRADA – ATENCION AL CLIENTE:
+Buenos días. Mi nombre es Ana, ¿en qué puedo ayudarle?
+Lamento escuchar eso. Para poder ayudarte, ¿podrías proporcionarme el número de tu pedido, por favor?
+Gracias. Dame un momento mientras verifico la información en nuestro sistema...
+Veo que tu pedido fue enviado hace cinco días. Parece que hubo un retraso con la empresa de mensajería. Te pido disculpas por las molestias.
+Voy a contactar a la empresa de mensajería para obtener más información y ver qué podemos hacer para agilizar la entrega. ¿Puedo llamarte de vuelta en unos 15 minutos?
+Perfecto. Gracias por tu paciencia. Te llamaré en breve con una actualización.
+Hola, soy Ana de nuevo. Contacté a la empresa de mensajería y me informaron que tu pedido se entregará mañana a primera hora. Para compensar el inconveniente, hemos aplicado un descuento del 10% en tu próxima compra.
+Gracias a ti por tu comprensión. Si necesitas algo más, no dudes en contactarnos. Que tengas un buen día. Hasta luego.
+
+b. ENTRADA – CLIENTE:
+Hola, buenos días. Llamo porque tengo un problema con mi pedido.
+Hice un pedido hace una semana y aún no ha llegado. Quisiera saber qué ha pasado.
+Sí, claro. Es el 123456789.
+Entiendo, pero necesito el pedido con urgencia. ¿Podrían hacer algo para acelerarlo?
+Sí, claro. Estaré esperando.
+Muchas gracias, Ana. Aprecio mucho tu ayuda y el descuento. Espero recibir mi pedido mañana.
+Igualmente, gracias.

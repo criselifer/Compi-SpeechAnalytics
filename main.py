@@ -126,6 +126,9 @@ def procesar(id_peticion, puntaje, lexemas_retorno, puntuacion):
         entrada = texto_area_cliente.get("1.0", "end-1c")
     
     ban_saludo, ban_despedida = False, False
+    # Preprocesamiento de la entrada
+    entrada = entrada.lower()
+    entrada = entrada + ' '
     if id_peticion == 0:
 
         # Mapear si en la entrada hay algun saludo
@@ -184,7 +187,7 @@ def procesar(id_peticion, puntaje, lexemas_retorno, puntuacion):
             # completo o es un espacio en blanco 
             if not(caracter in [' ', '\n', '\t', '\r', '.']):
                 # Si el caracter es un caracter especial, no se considera caso contrario se agrega al lexema y se mueve al siguiente nodo
-                if caracter in ['/', ',', '?', '¿', '!', '¡', '(', ')', '"', ':', ';', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ]:
+                if caracter in ['/', '%', '*', '\\', ',', '?', '¿', '!', '¡', '(', ')', '"', ':', ';', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ]:
                     continue
                 else:
                     lexema = lexema + caracter
