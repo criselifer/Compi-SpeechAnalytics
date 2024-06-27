@@ -130,7 +130,7 @@ def ventana_tokens(id_peticion, lexemas):
     root = tk.Tk()
     root.title("Gestor de Tokens")
     root.resizable(0, 0)
-    root.geometry("500x600")
+    root.geometry("530x600")
 
     # Establecer el icono de la ventana
     root.iconbitmap("static/lapiz.ico")
